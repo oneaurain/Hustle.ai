@@ -2,7 +2,9 @@ services:
   - type: web
     name: sidequest-backend
     env: node
+    region: ohio # or frankfurt, oregon, etc.
     plan: free
+    repo: https://github.com/oneaurain/Hustle.ai
     rootDir: server # IMPORTANT: Points to your server folder
     buildCommand: npm install
     startCommand: node server.js
