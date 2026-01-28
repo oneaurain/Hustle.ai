@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>API Test – Gemini & Stripe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      padding: 20px;
+    }
+    h2 {
+      margin-top: 30px;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+    }
+    textarea {
+      min-height: 80px;
+    }
+    button {
+      background: #4f46e5;
+      color: white;
+      cursor: pointer;
+    }
+    pre {
+      background: #111;
+      padding: 10px;
+      margin-top: 10px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Simple API Tester</h1>
+
+  <!-- Gemini API Test -->
+  <h2>Gemini API Test</h2>
+  <input
+    id="geminiKey"
+    placeholder="Paste Gemini API Key here (NOT public)"
+    type="password"
+  />
+  <textarea
+    id="geminiPrompt"
+    placeholder="Enter prompt for Gemini"
+  ></textarea>
+  <button onclick="testGemini()">Test Gemini API</button>
+  <pre id="geminiResult"></pre>
+
+  <!-- Stripe Key Test -->
+  <h2>Stripe Publishable Key Test</h2>
+  <input
+    id="stripeKey"
+    placeholder="Paste Stripe Publishable Key here"
+  />
+  <button onclick="testStripe()">Check Stripe Key</button>
+  <pre id="stripeResult"></pre>
+
+<script>
+  async function testGemini() {
+    const apiKey = document.getElementById("geminiKey").value;
+    const prompt = document.getElementById("geminiPrompt").value;
+    const output = document.getElementById("geminiResult");
+
+    output.textContent = "Loading...";
+
+    try {
+      const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + apiKey,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: prompt }]
+              }
+            ]
+          })
+        }
+      );
+
+      const data = await res.json();
+      output.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      output.textContent = "Error: " + err.message;
+    }
+  }
+
+  function testStripe() {
+    const key = document.getElementById("stripeKey").value;
+    const output = document.getElementById("stripeResult");
+
+    if (!key.startsWith("pk_")) {
+      output.textContent = "Invalid Stripe publishable key format";
+      return;
+    }
+
+    output.textContent =
+      "Stripe key format looks valid.\n(Actual Stripe actions should be done via backend)";
+  }
+</script>
+
+</body>
+</html>
