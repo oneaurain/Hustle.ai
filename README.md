@@ -1,8 +1,8 @@
-# SideQuest 🎮💰
+# Hustle.ai 🎮💰
 
 **Your next money quest starts here**
 
-SideQuest is an AI-powered mobile application that helps Gen Z discover and pursue personalized side hustles. Instead of overwhelming users with generic "make money online" lists, SideQuest uses Claude AI to analyze each user's unique skills, available time, resources, and goals to provide tailored side hustle recommendations called "quests."
+Hustle.ai is an AI-powered mobile application that helps Gen Z discover and pursue personalized side hustles. Instead of overwhelming users with generic "make money online" lists, Hustle.ai uses Claude AI to analyze each user's unique skills, available time, resources, and goals to provide tailored side hustle recommendations called "quests."
 
 ## 🎯 Features
 
@@ -26,7 +26,7 @@ SideQuest is an AI-powered mobile application that helps Gen Z discover and purs
 
 1. **Clone the repository**
    ```bash
-   cd SideQuest
+   cd Hustle.ai
    ```
 
 2. **Install dependencies**
@@ -62,7 +62,7 @@ SideQuest is an AI-powered mobile application that helps Gen Z discover and purs
 ## 📱 Project Structure
 
 ```
-SideQuest/
+Hustle.ai/
 ├── src/
 │   ├── components/       # Reusable UI components
 │   │   └── ui/          # Base UI components (Button, Input, Card, etc.)
@@ -140,7 +140,7 @@ This is a personal project, but feedback and suggestions are welcome!
 
 ## 📞 Support
 
-For questions or issues, please refer to the master plan documentation in `/ref/SideQuest Master Plan.txt`
+For questions or issues, please refer to the master plan documentation in `/ref/Hustle.ai Master Plan.txt`
 
 ---
 
