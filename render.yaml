@@ -2,9 +2,7 @@ services:
   - type: web
     name: sidequest-backend
     env: node
-    region: ohio # or frankfurt, oregon, etc.
     plan: free
-    repo: https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME # Optional if connecting via UI
     rootDir: server # IMPORTANT: Points to your server folder
     buildCommand: npm install
     startCommand: node server.js
