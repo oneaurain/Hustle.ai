@@ -61,11 +61,7 @@ export default function SettingsScreen() {
                         label="Notifications"
                         onPress={() => router.push('/settings/notifications')}
                     />
-                    <SettingItem
-                        icon="moon"
-                        label="Appearance"
-                        onPress={() => router.push('/settings/theme')}
-                    />
+
                 </View>
 
                 <SectionHeader title="Legal" />
