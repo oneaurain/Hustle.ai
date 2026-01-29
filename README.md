@@ -2,13 +2,16 @@
 
 **Your next money quest starts here**
 
-Hustle.ai is an AI-powered mobile application that helps Gen Z discover and pursue personalized side hustles. Instead of overwhelming users with generic "make money online" lists, Hustle.ai uses Claude AI to analyze each user's unique skills, available time, resources, and goals to provide tailored side hustle recommendations called "quests."
+Hustle.ai is an AI-powered mobile application that helps Gen Z discover and pursue personalized side hustles. Instead of overwhelming users with generic "make money online" lists, Hustle.ai uses advanced AI (Groq/Llama 3) to analyze each user's unique skills, available time, resources, and goals to provide tailored side hustle recommendations called "quests."
 
 ## 🎯 Features
 
-- **AI-Powered Matching**: Personalized quest recommendations using Claude AI
-- **Gaming-Inspired UX**: Gamified experience with progress tracking and achievements
+- **AI-Powered Matching**: Personalized quest recommendations using Groq (Llama 3)
+- **Gaming-Inspired UX**: Gamified experience with progress tracking, XP, and streaks
 - **Action-Oriented Guides**: Step-by-step action plans for each quest
+- **Monetization**:
+  - **Premium Subscription**: Unlock exclusive quests and advanced features (Stripe)
+  - **Rewards**: Watch ads to earn extra XP or unlock features (AdMob)
 - **Progress Tracking**: Track your earnings and quest completion
 - **Beautiful Design**: Modern UI with vibrant gradients and smooth animations
 
@@ -17,15 +20,18 @@ Hustle.ai is an AI-powered mobile application that helps Gen Z discover and purs
 - **Frontend**: React Native + Expo (TypeScript)
 - **Styling**: NativeWind (Tailwind CSS for React Native)
 - **Backend**: Supabase (PostgreSQL, Authentication, Storage)
-- **AI**: Claude Sonnet 4.5 via Anthropic API
+- **AI**: Groq API (Llama 3-8b-8192)
+- **Payments**: Stripe
+- **Ads**: Google AdMob
 - **State Management**: Zustand
 - **Animations**: Reanimated 3 + Moti
-- **Navigation**: React Navigation
+- **Navigation**: Expo Router
 
 ## 📦 Installation
 
 1. **Clone the repository**
    ```bash
+   git clone https://github.com/oneaurain/Hustle.ai.git
    cd Hustle.ai
    ```
 
@@ -35,49 +41,35 @@ Hustle.ai is an AI-powered mobile application that helps Gen Z discover and purs
    ```
 
 3. **Set up environment variables**
-   - Copy `.env.example` to `.env`
-   - Add your Supabase credentials
-   - Add your Anthropic API key
+   - Copy `.env.example` to `.env` (or create one)
+   - Add your credentials:
    ```bash
    EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
    EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-   EXPO_PUBLIC_ANTHROPIC_API_KEY=your_anthropic_key
+   EXPO_PUBLIC_GROQ_API_KEY=your_groq_key
+   EXPO_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
+   EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_key
+   EXPO_PUBLIC_ADMOB_BANNER_ID=your_banner_id
+   EXPO_PUBLIC_ADMOB_REWARDED_ID=your_rewarded_id
    ```
 
-4. **Set up Supabase database**
-   - Create a new Supabase project at [supabase.com](https://supabase.com)
-   - Run the SQL script in `supabase/schema.sql` in your Supabase SQL Editor
-   - This will create all necessary tables and security policies
-
-5. **Start the development server**
+4. **Start the development server**
    ```bash
    npx expo start
    ```
 
-6. **Run on device**
-   - Install Expo Go app on your phone
-   - Scan the QR code from the terminal
-   - Or press `a` for Android emulator, `i` for iOS simulator
+## 📱 Build & Deploy
 
-## 📱 Project Structure
-
+### Generate APK (Android)
+To generate an installable APK file instead of an AAB bundle:
+```bash
+eas build -p android --profile apk
 ```
-Hustle.ai/
-├── src/
-│   ├── components/       # Reusable UI components
-│   │   └── ui/          # Base UI components (Button, Input, Card, etc.)
-│   ├── config/          # Configuration files (Supabase, Anthropic)
-│   ├── constants/       # Theme constants and design tokens
-│   ├── navigation/      # React Navigation setup
-│   ├── screens/         # App screens
-│   │   └── onboarding/  # Onboarding flow screens
-│   ├── services/        # API services and business logic
-│   ├── store/           # Zustand state management
-│   ├── types/           # TypeScript type definitions
-│   └── utils/           # Utility functions
-├── supabase/            # Database schema and migrations
-├── assets/              # Images, fonts, and other static assets
-└── App.tsx              # Main app entry point
+
+### Production Build (AAB)
+For Google Play Store submission:
+```bash
+eas build -p android --profile production
 ```
 
 ## 🎨 Design System
@@ -89,58 +81,49 @@ Hustle.ai/
 - **Dark Background**: `#0A0E27` - App background
 - **Card Background**: `#1A1F3A` - Quest cards, containers
 
-### Typography
-- **Primary Font**: Inter (headers, body text)
-- **Secondary Font**: Space Grotesk (numbers, statistics)
-
-## 🔑 Getting API Keys
+## 🔑 API Configuration
 
 ### Supabase
-1. Go to [supabase.com](https://supabase.com) and create an account
-2. Create a new project
-3. Go to Settings > API
-4. Copy your project URL and anon/public key
+- Used for Authentication and Database.
+- Tables: `profiles`, `quests`, `user_quests`.
 
-### Anthropic (Claude AI)
-1. Go to [console.anthropic.com](https://console.anthropic.com)
-2. Create an account
-3. Generate an API key
-4. Add credits to your account
+### Groq (AI)
+- Provides fast inference for quest generation and chat.
+- Model: `llama3-8b-8192`.
 
-## 🚧 Development Roadmap
+### Stripe
+- Handles subscription payments.
+- Ensure you have a Merchant Identifier set up for Apple Pay if targeting iOS.
 
-### ✅ Phase 1: Project Setup (Current)
-- [x] Initialize React Native + Expo project
-- [x] Configure NativeWind and Tailwind
-- [x] Set up Supabase and Anthropic
-- [x] Create database schema
-- [x] Design system and constants
+## 🚧 Roadmap
 
-### 🔨 Phase 2: Core Features (Next)
-- [ ] Authentication screens (Login/Signup)
-- [ ] Onboarding flow
-- [ ] AI quest generation service
-- [ ] Quest discovery UI
-- [ ] Home screen with active quests
+### ✅ Phase 1: Foundation
+- [x] Project Setup & Architecture
+- [x] UI/UX Design System
+- [x] Authentication (Supabase)
+- [x] Database Schema
 
-### 🎯 Phase 3: Advanced Features
-- [ ] Progress tracking
-- [ ] Earnings tracker
-- [ ] User profile and settings
-- [ ] Premium subscription (Stripe)
-- [ ] AI consultation chat
+### ✅ Phase 2: Core Features
+- [x] Onboarding Flow
+- [x] Home Dashboard
+- [x] AI Quest Generation (Groq)
+- [x] Quest Details & Acceptance
+- [x] Profile & Settings
+
+### ✅ Phase 3: Engagement & Monetization
+- [x] Gamification (Streaks, XP)
+- [x] Premium Subscriptions (Stripe)
+- [x] Ad Integration (AdMob)
+- [x] Referral System
+
+### 🔜 Phase 4: Polish & Launch
+- [ ] Push Notifications
+- [ ] Analytics Integration
+- [ ] Play Store Submission
 
 ## 📄 License
 
 This project is for educational and personal use.
-
-## 🤝 Contributing
-
-This is a personal project, but feedback and suggestions are welcome!
-
-## 📞 Support
-
-For questions or issues, please refer to the master plan documentation in `/ref/Hustle.ai Master Plan.txt`
 
 ---
 
