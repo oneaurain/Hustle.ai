@@ -1,11 +1,12 @@
 import { Button } from '@/src/components/ui/Button';
 import { BORDER_RADIUS, COLORS, FONT_SIZES, SPACING } from '@/src/constants/theme';
 import { paymentService } from '@/src/services/paymentService';
+import { useAlertStore } from '@/src/store/alertStore';
 import { useAuthStore } from '@/src/store/authStore';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,25 +16,48 @@ export default function MembershipScreen() {
     // Mock referral count - in real app would come from DB
     const referralCount = user?.user_metadata?.referral_count || 0;
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'lifetime'>('monthly');
+
+    const { showAlert, hideAlert } = useAlertStore();
 
     const handleUpgrade = async () => {
         setIsLoading(true);
         try {
-            // Apply 10% discount if 3+ referrals
-            const price = referralCount >= 3 ? 449 : 499; // in cents
+            // Apply discount if 3+ referrals
+            // Monthly: Base 2.99 (299 cents). Discounted 1.99 (199 cents).
+            // Lifetime: Base 9.99 (999 cents).
 
-            const isInitialized = await paymentService.initializePaymentSheet(price);
+            let finalPrice = 0;
+
+            if (selectedPlan === 'monthly') {
+                // Base $2.99. If 3+ referrals -> $1.99
+                finalPrice = referralCount >= 3 ? 199 : 299;
+            } else {
+                // Lifetime $9.99. If 3+ referrals -> discount? 
+                // Maintaining existing logic: let's apply a similar scale or just keeping it simple.
+                // Previous logic was 10%. Let's keep lifetime simple or apply similar "Pro" discount.
+                // Let's assume the "45% / 1.99" request was specific to Monthly. 
+                // For lifetime, let's just give a 10% discount as before or maybe 20%?
+                // I'll stick to the explicit user request for monthly and keep slight discount for lifetime.
+                finalPrice = referralCount >= 3 ? 899 : 999;
+            }
+
+            const isInitialized = await paymentService.initializePaymentSheet(finalPrice);
             if (isInitialized) {
                 const success = await paymentService.openPaymentSheet();
                 if (success) {
                     // Unlock features
-                    Alert.alert('Welcome to Pro!', 'All premium features are now unlocked.');
+                    showAlert('Welcome to Pro!', 'All premium features are now unlocked.', [
+                        { text: "Awesome!", onPress: hideAlert }
+                    ]);
                     // TODO: Update user metadata in backend
                 }
             }
         } catch (error) {
             console.error(error);
-            Alert.alert('Error', 'Something went wrong during checkout.');
+            showAlert('Error', 'Something went wrong during checkout.', [
+                { text: "OK", onPress: hideAlert }
+            ]);
         } finally {
             setIsLoading(false);
         }
@@ -55,19 +79,50 @@ export default function MembershipScreen() {
                     <Text style={styles.subtitle}>Supercharge your side hustle journey with Hustle.ai Pro.</Text>
                 </View>
 
+                {/* Plan Selection */}
+                <View style={styles.tabContainer}>
+                    <TouchableOpacity
+                        style={[styles.tab, selectedPlan === 'monthly' && styles.activeTab]}
+                        onPress={() => setSelectedPlan('monthly')}
+                    >
+                        <Text style={[styles.tabText, selectedPlan === 'monthly' && styles.activeTabText]}>Monthly</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, selectedPlan === 'lifetime' && styles.activeTab]}
+                        onPress={() => setSelectedPlan('lifetime')}
+                    >
+                        <Text style={[styles.tabText, selectedPlan === 'lifetime' && styles.activeTabText]}>Lifetime</Text>
+                        <View style={styles.saveBadge}>
+                            <Text style={styles.saveBadgeText}>SAVE 50%</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+
                 {/* Pro Card */}
                 <Animated.View entering={FadeInDown.delay(200)} style={styles.card}>
                     <View style={styles.badgeContainer}>
                         <Feather name="zap" size={20} color={COLORS.darkBg} />
-                        <Text style={styles.badgeText}>BEST VALUE</Text>
+                        <Text style={styles.badgeText}>{selectedPlan === 'lifetime' ? 'BEST VALUE' : 'MOST POPULAR'}</Text>
                     </View>
 
-                    <Text style={styles.planName}>Hustle Pro🥵</Text>
+                    <Text style={styles.planName}>Hustle Pro {selectedPlan === 'lifetime' && '👑'}</Text>
                     <View style={styles.priceContainer}>
                         <Text style={styles.currency}>$</Text>
-                        <Text style={styles.price}>4.99</Text>
-                        <Text style={styles.period}>/month</Text>
+                        {/* Display Price Logic */}
+                        <Text style={styles.price}>
+                            {selectedPlan === 'monthly'
+                                ? (referralCount >= 3 ? '1.99' : '2.99')
+                                : (referralCount >= 3 ? '8.99' : '9.99')}
+                        </Text>
+                        <Text style={styles.period}>{selectedPlan === 'monthly' ? '/month' : '/one-time'}</Text>
                     </View>
+
+                    {/* Original Price Strikethrough if discounted */}
+                    {referralCount >= 3 && (
+                        <Text style={styles.strikethroughPrice}>
+                            {selectedPlan === 'monthly' ? '$2.99' : '$9.99'}
+                        </Text>
+                    )}
 
                     <View style={styles.featuresList}>
                         {features.map((feature, index) => (
@@ -79,7 +134,7 @@ export default function MembershipScreen() {
                     </View>
 
                     <Button
-                        title={isLoading ? "Processing..." : "Upgrade Now"}
+                        title={isLoading ? "Processing..." : `Upgrade for $${selectedPlan === 'monthly' ? (referralCount >= 3 ? '1.99' : '2.99') : (referralCount >= 3 ? '8.99' : '9.99')}`}
                         variant="primary"
                         size="lg"
                         fullWidth
@@ -92,7 +147,7 @@ export default function MembershipScreen() {
                     {referralCount >= 3 && (
                         <View style={styles.discountBadge}>
                             <Feather name="tag" size={14} color={COLORS.textInverse} />
-                            <Text style={styles.discountText}>10% Referral Discount Applied!</Text>
+                            <Text style={styles.discountText}>45% Referral Discount Applied!</Text>
                         </View>
                     )}
 
@@ -175,7 +230,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'flex-end',
         justifyContent: 'center',
-        marginBottom: SPACING.xl,
+        marginBottom: SPACING.xs,
+    },
+    strikethroughPrice: {
+        fontSize: FONT_SIZES.base,
+        color: COLORS.textMuted,
+        textDecorationLine: 'line-through',
+        textAlign: 'center',
+        marginBottom: SPACING.lg,
     },
     currency: {
         fontSize: FONT_SIZES.xl,
@@ -243,5 +305,46 @@ const styles = StyleSheet.create({
         color: COLORS.textInverse,
         fontWeight: 'bold',
         fontSize: FONT_SIZES.xs,
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        backgroundColor: COLORS.cardBg,
+        borderRadius: BORDER_RADIUS.full,
+        padding: 4,
+        marginBottom: SPACING.lg,
+        borderWidth: 1,
+        borderColor: COLORS.borderColor,
+    },
+    tab: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderRadius: BORDER_RADIUS.full,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 6,
+    },
+    activeTab: {
+        backgroundColor: COLORS.primary,
+    },
+    tabText: {
+        fontSize: FONT_SIZES.sm,
+        fontWeight: '600',
+        color: COLORS.textSecondary,
+    },
+    activeTabText: {
+        color: COLORS.textInverse,
+        fontWeight: '700',
+    },
+    saveBadge: {
+        backgroundColor: COLORS.success,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    saveBadgeText: {
+        color: '#FFF',
+        fontSize: 10,
+        fontWeight: '800',
     },
 });

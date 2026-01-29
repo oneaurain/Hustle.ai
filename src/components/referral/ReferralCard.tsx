@@ -16,10 +16,13 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({ userName }) => {
         generateCode,
         getTier,
         getNextReward,
-        getProgress
+
+        getProgress,
+        initialize,
     } = useReferralStore();
 
     useEffect(() => {
+        initialize();
         if (!referralCode && userName) {
             generateCode(userName);
         }

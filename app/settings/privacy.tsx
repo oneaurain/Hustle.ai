@@ -20,30 +20,42 @@ export default function PrivacyScreen() {
 
             <ScrollView contentContainerStyle={styles.content}>
                 <Text style={styles.paragraph}>
-                    Last Updated: January 1, 2026
+                    Last Updated: January 28, 2026
                 </Text>
 
-                <Text style={styles.heading}>1. Information Collection</Text>
+                <Text style={styles.heading}>1. Introduction</Text>
                 <Text style={styles.paragraph}>
-                    We collect information you provide directly to us, such as when you create or modify your account, request on-demand services, contact customer support, or otherwise communicate with us.
+                    Welcome to SideQuest ("we," "our," or "us"). We respect your privacy and represent that we handle your data with care. This Privacy Policy explains how we collect, use, and share your information when you use our mobile application.
                 </Text>
 
-                <Text style={styles.heading}>2. Use of Information</Text>
+                <Text style={styles.heading}>2. Information We Collect</Text>
                 <Text style={styles.paragraph}>
-                    We may use the information we collect about you to: Provide, maintain, and improve our Services, including, for example, to facilitate payments, send receipts, provide products and services you request (and send related information), develop new features.
+                    • **Account Information:** Email address and authentication data via Supabase.
+                    • **Usage Data:** Quest progress, earnings history, and app interaction data.
+                    • **Device Data:** Device type, OS version, and advertising IDs (Google AdMob).
+                    • **Payment Data:** Transaction history via Stripe (we do not store full credit card numbers).
                 </Text>
 
-                <Text style={styles.heading}>3. Sharing of Information</Text>
+                <Text style={styles.heading}>3. Third-Party Services</Text>
                 <Text style={styles.paragraph}>
-                    We may share the information we collect about you as described in this Statement or as described at the time of collection or sharing, including as follows: Through our Services – We may share your information with our drivers to enable them to provide the Services you request.
+                    We use trusted third-party services to operate our app:
+                    • **Google AdMob:** To display advertisements (banner and rewarded). Google collects device identifiers.
+                    • **Stripe:** To process secure payments.
+                    • **Supabase:** For secure authentication and database hosting.
+                    • **AI Service:** To generate personalized quest roadmaps.
                 </Text>
 
-                <Text style={styles.heading}>4. Security</Text>
+                <Text style={styles.heading}>4. Data Deletion</Text>
                 <Text style={styles.paragraph}>
-                    We take reasonable measures to help protect information about you from loss, theft, misuse and unauthorized access, disclosure, alteration and destruction.
+                    You have the right to request the deletion of your account and all associated data. You can perform this action directly within the App Settings &rarr; Delete Account. This will permanently remove your data from our servers.
+                </Text>
+
+                <Text style={styles.heading}>5. Contact Us</Text>
+                <Text style={styles.paragraph}>
+                    If you have questions about this policy, please contact us at support@hustle.ai.
                 </Text>
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 

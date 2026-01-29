@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hustle.ai",
     "slug": "hustle-ai",
-    "version": "1.0.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "hustle-ai",
@@ -22,7 +22,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.hustle.ai"
     },
     "web": {
       "output": "static",
@@ -43,18 +44,22 @@
         }
       ],
       "expo-font",
-      "expo-secure-store",
-      [
-        "@stripe/stripe-react-native",
-        {
-          "merchantIdentifier": "merchant.com.hustleai.app",
-          "enableGooglePay": true
-        }
-      ]
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4bc5f235-3d3a-4466-94fb-39bcc745bbac"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/4bc5f235-3d3a-4466-94fb-39bcc745bbac"
     }
   }
 }

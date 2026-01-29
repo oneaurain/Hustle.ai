@@ -21,7 +21,7 @@ export const signUp = async ({ email, password, options }: any) => {
         password,
         options,
     });
-    return { data: data.user, error };
+    return { data, error };
 };
 
 export const signInWithGoogle = async () => {

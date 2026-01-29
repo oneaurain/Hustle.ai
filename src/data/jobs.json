@@ -1,0 +1,426 @@
+[
+    {
+        "id": "job-001",
+        "title": "Freelance Logo Design",
+        "category": "Creative",
+        "skills": [
+            "Graphic Design",
+            "Illustration",
+            "Branding"
+        ],
+        "min_time_hours": 2,
+        "max_time_hours": 5,
+        "difficulty": 3,
+        "earnings_min": 50,
+        "earnings_max": 300,
+        "description": "Design a unique logo for a startup or small business.",
+        "action_steps": [
+            "Research client brand",
+            "Sketch 3 concepts",
+            "Digitize in Illustrator",
+            "Refine and export"
+        ]
+    },
+    {
+        "id": "job-002",
+        "title": "Blog Post Writing",
+        "category": "Content Creation",
+        "skills": [
+            "Writing",
+            "SEO",
+            "Research"
+        ],
+        "min_time_hours": 2,
+        "max_time_hours": 4,
+        "difficulty": 2,
+        "earnings_min": 30,
+        "earnings_max": 100,
+        "description": "Write a SEO-optimized blog post of 1000 words.",
+        "action_steps": [
+            "Keyword research",
+            "Outline structure",
+            "Draft content",
+            "Proofread and edit"
+        ]
+    },
+    {
+        "id": "job-003",
+        "title": "Social Media Templates",
+        "category": "Creative",
+        "skills": [
+            "Canva",
+            "Graphic Design"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 3,
+        "difficulty": 1,
+        "earnings_min": 15,
+        "earnings_max": 50,
+        "description": "Create a set of 5 Instagram story templates for a brand.",
+        "action_steps": [
+            "Choose color palette",
+            "Design layout",
+            "Add placeholder text",
+            "Export as template"
+        ]
+    },
+    {
+        "id": "job-004",
+        "title": "Video Editing - Youtube Short",
+        "category": "Creative",
+        "skills": [
+            "Video Editing",
+            "Premiere Pro",
+            "CapCut"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 3,
+        "difficulty": 3,
+        "earnings_min": 25,
+        "earnings_max": 80,
+        "description": "Edit a 60-second vertical video with captions and effects.",
+        "action_steps": [
+            "Import raw footage",
+            "Cut funny moments",
+            "Add captions",
+            "Add sound effects"
+        ]
+    },
+    {
+        "id": "job-005",
+        "title": "User Testing",
+        "category": "Tech",
+        "skills": [
+            "UX awareness",
+            "Communication"
+        ],
+        "min_time_hours": 0.5,
+        "max_time_hours": 1,
+        "difficulty": 1,
+        "earnings_min": 10,
+        "earnings_max": 30,
+        "description": "Record your screen and voice while testing a new website.",
+        "action_steps": [
+            "Sign up for platform",
+            "Complete screener",
+            "Perform test tasks",
+            "Upload video"
+        ]
+    },
+    {
+        "id": "job-006",
+        "title": "Pet Sitting / Dog Walking",
+        "category": "Services",
+        "skills": [
+            "Pet Care",
+            "Reliability"
+        ],
+        "min_time_hours": 0.5,
+        "max_time_hours": 2,
+        "difficulty": 1,
+        "earnings_min": 15,
+        "earnings_max": 40,
+        "description": "Walk a dog for 30-60 minutes.",
+        "action_steps": [
+            "Meet owner",
+            "Walk assigned route",
+            "Provide water",
+            "Send photo update"
+        ]
+    },
+    {
+        "id": "job-007",
+        "title": "Online Tutoring - Math",
+        "category": "Teaching",
+        "skills": [
+            "Math",
+            "Teaching"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 2,
+        "difficulty": 3,
+        "earnings_min": 20,
+        "earnings_max": 60,
+        "description": "Tutor a student in Algebra or Calculus via Zoom.",
+        "action_steps": [
+            "Review lesson material",
+            "Host video call",
+            "Explain concepts",
+            "Assign practice problems"
+        ]
+    },
+    {
+        "id": "job-008",
+        "title": "Transcription",
+        "category": "Services",
+        "skills": [
+            "Typing",
+            "Listening"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 3,
+        "difficulty": 2,
+        "earnings_min": 15,
+        "earnings_max": 45,
+        "description": "Transcribe a 30-minute audio file into text.",
+        "action_steps": [
+            "Listen to audio",
+            "Type verbatim",
+            "Timestamp unclear sections",
+            "Proofread"
+        ]
+    },
+    {
+        "id": "job-009",
+        "title": "Voiceover - Commercial",
+        "category": "Creative",
+        "skills": [
+            "Voice Acting",
+            "Audio Recording"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 2,
+        "difficulty": 3,
+        "earnings_min": 50,
+        "earnings_max": 200,
+        "description": "Record a 30-second voiceover for a radio or web ad.",
+        "action_steps": [
+            "Read script",
+            "Record 3 takes",
+            "Clean up audio",
+            "Export high-quality WAV"
+        ]
+    },
+    {
+        "id": "job-010",
+        "title": "Virtual Assistant - Email Management",
+        "category": "Services",
+        "skills": [
+            "Organization",
+            "Communication"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 4,
+        "difficulty": 2,
+        "earnings_min": 15,
+        "earnings_max": 30,
+        "description": "Organize and reply to emails for a busy professional.",
+        "action_steps": [
+            "Sort inbox",
+            "Unsubscribe spam",
+            "Draft replies",
+            "Flag urgent items"
+        ]
+    },
+    {
+        "id": "job-011",
+        "title": "React Native Bug Fix",
+        "category": "Tech",
+        "skills": [
+            "React Native",
+            "Debugging",
+            "Typescript"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 4,
+        "difficulty": 4,
+        "earnings_min": 50,
+        "earnings_max": 150,
+        "description": "Fix a specific UI bug or crash in a mobile app.",
+        "action_steps": [
+            "Reproduce bug",
+            "Identify root cause",
+            "Implement fix",
+            "Test on device"
+        ]
+    },
+    {
+        "id": "job-012",
+        "title": "Product Photography",
+        "category": "Creative",
+        "skills": [
+            "Photography",
+            "Lighting"
+        ],
+        "min_time_hours": 2,
+        "max_time_hours": 5,
+        "difficulty": 3,
+        "earnings_min": 50,
+        "earnings_max": 200,
+        "description": "Take regular white-background photos of 5 products.",
+        "action_steps": [
+            "Set up lighting",
+            "Shoot angles",
+            "Edit in Lightroom",
+            "Remove background"
+        ]
+    },
+    {
+        "id": "job-013",
+        "title": "Resume Review",
+        "category": "Services",
+        "skills": [
+            "HR knowledge",
+            "Writing"
+        ],
+        "min_time_hours": 0.5,
+        "max_time_hours": 1,
+        "difficulty": 2,
+        "earnings_min": 20,
+        "earnings_max": 50,
+        "description": "Critique and edit a client's resume.",
+        "action_steps": [
+            "Review current resume",
+            "Fix formatting",
+            "Improve active verbs",
+            "Add summary"
+        ]
+    },
+    {
+        "id": "job-014",
+        "title": "Data Entry",
+        "category": "Services",
+        "skills": [
+            "Typing",
+            "Excel"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 5,
+        "difficulty": 1,
+        "earnings_min": 12,
+        "earnings_max": 30,
+        "description": "Enter data from PDF forms into a spreadsheet.",
+        "action_steps": [
+            "Open spreadsheet",
+            "Copy data accurately",
+            "Verify entries",
+            "Save file"
+        ]
+    },
+    {
+        "id": "job-015",
+        "title": "Translation (Spanish/English)",
+        "category": "Services",
+        "skills": [
+            "Languages",
+            "Translation"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 3,
+        "difficulty": 3,
+        "earnings_min": 25,
+        "earnings_max": 80,
+        "description": "Translate a 1000-word document.",
+        "action_steps": [
+            "Read source text",
+            "Translate meaning",
+            "Review grammar",
+            "Final polish"
+        ]
+    },
+    {
+        "id": "job-016",
+        "title": "Custom Illustration",
+        "category": "Creative",
+        "skills": [
+            "Drawing",
+            "Procreate"
+        ],
+        "min_time_hours": 3,
+        "max_time_hours": 8,
+        "difficulty": 4,
+        "earnings_min": 80,
+        "earnings_max": 300,
+        "description": "Draw a custom digital portrait or scene.",
+        "action_steps": [
+            "Rough sketch",
+            "Line art",
+            "Coloring",
+            "Shading and details"
+        ]
+    },
+    {
+        "id": "job-017",
+        "title": "Discord Community Mod",
+        "category": "Tech",
+        "skills": [
+            "Community Management",
+            "Communication"
+        ],
+        "min_time_hours": 2,
+        "max_time_hours": 4,
+        "difficulty": 2,
+        "earnings_min": 20,
+        "earnings_max": 50,
+        "description": "Moderate a Discord server for a few hours.",
+        "action_steps": [
+            "Monitor chat",
+            "Answer user questions",
+            "Ban bots",
+            "Post announcements"
+        ]
+    },
+    {
+        "id": "job-018",
+        "title": "Flipping Items",
+        "category": "E-commerce",
+        "skills": [
+            "Market Research",
+            "Negotiation"
+        ],
+        "min_time_hours": 2,
+        "max_time_hours": 10,
+        "difficulty": 2,
+        "earnings_min": 20,
+        "earnings_max": 200,
+        "description": "Find undervalued items at garage sales/marketplace/thrift stores and resell.",
+        "action_steps": [
+            "Source item",
+            "Clean/repair",
+            "Take photos",
+            "List on eBay/FB Marketplace"
+        ]
+    },
+    {
+        "id": "job-019",
+        "title": "Print on Demand Designs",
+        "category": "E-commerce",
+        "skills": [
+            "Design",
+            "Trend Research"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 3,
+        "difficulty": 2,
+        "earnings_min": 5,
+        "earnings_max": 100,
+        "description": "Create designs for t-shirts/mugs and upload to Redbubble.",
+        "action_steps": [
+            "Research trends",
+            "Create graphic",
+            "Adjust for product",
+            "Upload & Tag"
+        ]
+    },
+    {
+        "id": "job-020",
+        "title": "Consulting Call",
+        "category": "Services",
+        "skills": [
+            "Expertise",
+            "Speaking"
+        ],
+        "min_time_hours": 1,
+        "max_time_hours": 1.5,
+        "difficulty": 4,
+        "earnings_min": 100,
+        "earnings_max": 300,
+        "description": "Provide 1 hour of expert advice in your field.",
+        "action_steps": [
+            "Prepare questions",
+            "Host call",
+            "Provide solution",
+            "Send summary"
+        ]
+    }
+]

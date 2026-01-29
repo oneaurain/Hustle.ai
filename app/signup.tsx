@@ -12,10 +12,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/src/components/ui/Button';
+import { CodeInput } from '@/src/components/ui/CodeInput';
 import { Input } from '@/src/components/ui/Input';
 import { COLORS, FONT_SIZES, SPACING } from '@/src/constants/theme';
 import { signUp } from '@/src/services/authService';
 import { useAuthStore } from '@/src/store/authStore';
+import { Feather } from '@expo/vector-icons';
 
 
 export default function SignupScreen() {
@@ -27,6 +29,10 @@ export default function SignupScreen() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    // OTP State
+    const [showVerification, setShowVerification] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('');
 
     const handleSignup = async () => {
         // Validation
@@ -46,15 +52,47 @@ export default function SignupScreen() {
         }
 
         setIsLoading(true);
+        // Supabase SignUp triggers the email dispatch
         const result = await signUp({ email, password, confirmPassword });
         setIsLoading(false);
 
         if (result.error) {
             Alert.alert('Signup Failed', result.error.message);
-        } else if (result.data) {
-            setUser(result.data);
-            // Navigate to onboarding
-            router.replace('/onboarding/skills');
+        } else {
+            // If signup is successful (but unverified), show OTP input
+            // Supabase returns null session if email confirmation is required
+            if (!result.data?.session && result.data?.user) {
+                setShowVerification(true);
+                Alert.alert('Verification Code Sent', 'Please check your email for the code.');
+            } else if (result.data?.user) {
+                // If auto-confirmed (shouldn't happen if confirm email is ON)
+                setUser(result.data.user);
+                router.replace('/onboarding/skills');
+            }
+        }
+    };
+
+    const handleVerify = async () => {
+        if (!verificationCode) {
+            Alert.alert('Error', 'Please enter the verification code');
+            return;
+        }
+
+        setIsLoading(true);
+        const { verifyOtp } = await import('@/src/services/authService');
+        try {
+            const { session, user } = await verifyOtp(email, verificationCode);
+
+            if (session && user) {
+                setUser(user);
+                router.replace('/onboarding/skills');
+            } else {
+                Alert.alert('Error', 'Verification failed. Please try again.');
+            }
+        } catch (error: any) {
+            Alert.alert('Verification Failed', error.message || 'Invalid code');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -67,61 +105,119 @@ export default function SignupScreen() {
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     {/* Header */}
                     <View style={styles.header}>
-                        <Text style={styles.title}>Join Hustle.ai</Text>
+                        <Text style={styles.title}>
+                            {showVerification ? 'Verify Email' : 'Join Hustle.ai'}
+                        </Text>
                         <Text style={styles.subtitle}>
-                            Start your journey to financial freedom 
+                            {showVerification
+                                ? `Enter the code sent to ${email}`
+                                : 'Start your journey to financial freedom'}
                         </Text>
                     </View>
 
                     {/* Form */}
                     <View style={styles.form}>
-                        <Input
-                            label="Email"
-                            placeholder="your@email.com"
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            autoComplete="email"
-                        />
+                        {!showVerification ? (
+                            <>
+                                <Input
+                                    label="Email"
+                                    placeholder="your@email.com"
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                    autoComplete="email"
+                                />
 
-                        <Input
-                            label="Password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry={!showPassword}
-                            autoCapitalize="none"
-                            autoComplete="password"
-                            rightIcon={
-                                <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
-                            }
-                            onRightIconPress={() => setShowPassword(!showPassword)}
-                        />
+                                <Input
+                                    label="Password"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry={!showPassword}
+                                    autoCapitalize="none"
+                                    autoComplete="password"
+                                    rightIcon={
+                                        <Feather name={showPassword ? "eye" : "eye-off"} size={20} color={COLORS.textSecondary} />
+                                    }
+                                    onRightIconPress={() => setShowPassword(!showPassword)}
+                                />
 
-                        <Input
-                            label="Confirm Password"
-                            placeholder="••••••••"
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            secureTextEntry={!showPassword}
-                            autoCapitalize="none"
-                            autoComplete="password"
-                        />
+                                <Input
+                                    label="Confirm Password"
+                                    placeholder="••••••••"
+                                    value={confirmPassword}
+                                    onChangeText={setConfirmPassword}
+                                    secureTextEntry={!showPassword}
+                                    autoCapitalize="none"
+                                    autoComplete="password"
+                                />
 
-                        <Button
-                            title="Create Account"
-                            variant="primary"
-                            size="lg"
-                            fullWidth
-                            isLoading={isLoading}
-                            onPress={handleSignup}
-                            style={styles.signupButton}
-                        />
+                                <Button
+                                    title="Create Account"
+                                    variant="primary"
+                                    size="lg"
+                                    fullWidth
+                                    isLoading={isLoading}
+                                    onPress={handleSignup}
+                                    style={styles.signupButton}
+                                />
 
-                        <Text style={styles.terms}>
-                            By signing up, you agree to our Terms of Service and Privacy Policy
-                        </Text>
+                                <Text style={styles.terms}>
+                                    By signing up, you agree to our Terms of Service and Privacy Policy
+                                </Text>
+                            </>
+                        ) : (
+                            <>
+                                <View style={{ marginBottom: 24, alignItems: 'center' }}>
+                                    <Text style={{ color: COLORS.textSecondary, marginBottom: 8, textAlign: 'center' }}>
+                                        Check your email inbox (and spam) for the code.
+                                    </Text>
+                                </View>
+
+                                <CodeInput
+                                    value={verificationCode}
+                                    onChangeText={setVerificationCode}
+                                    length={6}
+                                />
+
+                                <Button
+                                    title="Verify & Continue"
+                                    variant="primary"
+                                    size="lg"
+                                    fullWidth
+                                    isLoading={isLoading}
+                                    onPress={handleVerify}
+                                    style={styles.signupButton}
+                                />
+
+                                <Button
+                                    title="Resend Code"
+                                    variant="ghost"
+                                    size="sm"
+                                    onPress={async () => {
+                                        // Resend Logic
+                                        setIsLoading(true);
+                                        try {
+                                            console.log("Resending signup for:", email);
+                                            const res = await signUp({ email, password, confirmPassword });
+                                            // Note: signUp will resend confirmation if user exists and is unconfirmed
+                                            if (res.error) {
+                                                Alert.alert("Resend Failed", res.error.message);
+                                            } else {
+                                                Alert.alert("Code Resent", "Please check your email.");
+                                            }
+                                        } catch (e) {
+                                            console.error(e);
+                                        } finally {
+                                            setIsLoading(false);
+                                        }
+                                    }}
+                                    disabled={isLoading}
+                                />
+                            </>
+
+                        )}
                     </View>
 
                     {/* Footer */}
@@ -170,9 +266,7 @@ const styles = StyleSheet.create({
     form: {
         marginBottom: SPACING.xl,
     },
-    eyeIcon: {
-        fontSize: 20,
-    },
+
     signupButton: {
         marginTop: SPACING.md,
         marginBottom: SPACING.md,

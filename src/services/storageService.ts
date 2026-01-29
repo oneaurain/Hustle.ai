@@ -1,6 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
 
 /**
  * Robust storage service that automatically chooses the best storage method.
@@ -10,23 +8,15 @@ import { Platform } from 'react-native';
 
 export const secureStorage = {
     getItem: async (key: string): Promise<string | null> => {
-        if (Platform.OS === 'web') {
-            return AsyncStorage.getItem(key);
-        }
-        return await SecureStore.getItemAsync(key);
+        return AsyncStorage.getItem(key);
     },
 
     setItem: async (key: string, value: string): Promise<void> => {
-        if (Platform.OS === 'web') {
-            return AsyncStorage.setItem(key, value);
-        }
-        return await SecureStore.setItemAsync(key, value);
+        // ALWAYS use AsyncStorage for large state persistence to avoid 2048 byte limit warning from SecureStore
+        return AsyncStorage.setItem(key, value);
     },
 
     removeItem: async (key: string): Promise<void> => {
-        if (Platform.OS === 'web') {
-            return AsyncStorage.removeItem(key);
-        }
-        return await SecureStore.deleteItemAsync(key);
+        return AsyncStorage.removeItem(key);
     },
 };

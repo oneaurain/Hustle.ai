@@ -1,10 +1,10 @@
 import { Button } from '@/src/components/ui/Button';
-import { TypewriterText } from '@/src/components/ui/TypewriterText';
 import { COLORS, FONT_SIZES, SPACING } from '@/src/constants/theme';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { TypewriterText } from '../src/components/ui/TypewriterText';
 
 export default function WelcomeScreen() {
     const router = useRouter();
@@ -28,7 +28,6 @@ export default function WelcomeScreen() {
                         text="'Your next money hustle starts here'"
                         style={styles.tagline}
                         speed={40}
-                        delay={500}
                     />
                 </View>
 

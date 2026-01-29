@@ -40,7 +40,7 @@ export const Input: React.FC<InputProps> = ({
                 {icon && <View style={styles.iconContainer}>{icon}</View>}
 
                 <TextInput
-                    style={[styles.input, icon && styles.inputWithIcon, style]}
+                    style={[styles.input, !!icon && styles.inputWithIcon, style]}
                     placeholderTextColor={COLORS.textMuted}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}

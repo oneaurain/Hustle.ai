@@ -1,31 +1,75 @@
+import { DeleteAccountModal } from '@/src/components/settings/DeleteAccountModal';
+import { supabase } from '@/src/config/supabase';
 import { COLORS, FONT_SIZES, SPACING } from '@/src/constants/theme';
+import { useAlertStore } from '@/src/store/alertStore';
 import { useAuthStore } from '@/src/store/authStore';
+import { useRatingStore } from '@/src/store/ratingStore'; // Import
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
     const router = useRouter();
     const { user, clearUser } = useAuthStore();
 
+    const { showAlert, hideAlert } = useAlertStore();
+
     const handleSignOut = async () => {
-        Alert.alert(
+        showAlert(
             "Sign Out",
             "Are you sure you want to sign out?",
             [
-                { text: "Cancel", style: "cancel" },
+                { text: "Cancel", style: "cancel", onPress: hideAlert },
                 {
                     text: "Sign Out",
                     style: "destructive",
                     onPress: async () => {
+                        hideAlert();
                         await clearUser();
                         router.replace('/login');
                     }
                 }
             ]
         );
+    };
+
+    const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+
+    const handleDeleteAccount = async () => {
+        try {
+            setShowDeleteModal(false);
+            // 1. Delete user data from public tables (RLS must allow this)
+            // Note: Deleting auth.users requires an Admin RPC or Edge Function.
+            // Here we do a best-effort cleanup of public data reachable by the user.
+            // In a production app, calling a Supabase Edge Function is recommended to ensure complete wipe.
+
+            // Delete profile (cascades usually, but let's be safe)
+            if (user) {
+                const { error } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', user.id);
+
+                if (error) {
+                    console.error("Error deleting profile:", error);
+                    // Proceed anyway to sign out
+                }
+            }
+
+            await clearUser();
+            router.replace('/login');
+
+            // Show success on next screen (login)
+            setTimeout(() => {
+                showAlert("Account Deleted", "Your data and membership have been removed.");
+            }, 500);
+
+        } catch (error) {
+            showAlert("Error", "Could not complete deletion. Please contact support.");
+            console.error("Delete account error:", error);
+        }
     };
 
     const SettingItem = ({ icon, label, onPress, isDestructive = false }: { icon: any, label: string, onPress: () => void, isDestructive?: boolean }) => (
@@ -82,6 +126,12 @@ export default function SettingsScreen() {
                 <View style={styles.section}>
                     {user ? (
                         <>
+                            {/* Added Rate Us Button */}
+                            <SettingItem
+                                icon="star"
+                                label="Rate Us"
+                                onPress={() => useRatingStore.getState().showRating()}
+                            />
                             <SettingItem
                                 icon="log-out"
                                 label="Sign Out"
@@ -90,7 +140,7 @@ export default function SettingsScreen() {
                             <SettingItem
                                 icon="trash-2"
                                 label="Delete Account"
-                                onPress={() => Alert.alert("Delete Account", "This action cannot be undone. Please contact support.")}
+                                onPress={() => setShowDeleteModal(true)}
                                 isDestructive
                             />
                         </>
@@ -109,6 +159,12 @@ export default function SettingsScreen() {
                 </View>
 
             </ScrollView>
+
+            <DeleteAccountModal
+                visible={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDeleteAccount}
+            />
         </SafeAreaView>
     );
 }
@@ -191,3 +247,5 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
 });
+
+

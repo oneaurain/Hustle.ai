@@ -62,6 +62,11 @@ export default function DiscoverScreen() {
 
             const newQuests = await generateQuests(onboardingData);
 
+            if (!Array.isArray(newQuests)) {
+                console.error('generateQuests returned generic non-array:', newQuests);
+                return;
+            }
+
             // Save to Supabase if user is logged in
             if (user?.id && newQuests.length > 0) {
                 const questsToInsert = newQuests.map((quest) => ({
@@ -80,18 +85,22 @@ export default function DiscoverScreen() {
                 }
             } else {
                 // Add to local store only
-                newQuests.forEach((quest) => {
-                    addQuest({
-                        id: `local-${Date.now()}-${Math.random()}`,
-                        user_id: user?.id || 'guest',
-                        status: 'suggested',
-                        custom_data: quest,
-                        started_at: undefined,
-                        completed_at: undefined,
-                        created_at: new Date().toISOString(),
-
+                if (Array.isArray(newQuests)) {
+                    newQuests.forEach((quest) => {
+                        addQuest({
+                            id: `local-${Date.now()}-${Math.random()}`,
+                            user_id: user?.id || 'guest',
+                            status: 'suggested',
+                            custom_data: quest,
+                            started_at: undefined,
+                            completed_at: undefined,
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString(),
+                        });
                     });
-                });
+                } else {
+                    console.error('newQuests is not an array:', newQuests);
+                }
             }
         } catch (error) {
             console.error('Error generating quests:', error);

@@ -32,6 +32,7 @@ export interface Quest {
     status: 'suggested' | 'active' | 'completed' | 'archived';
     custom_data: QuestData;
     created_at: string;
+    updated_at: string;
     started_at?: string;
     completed_at?: string;
 }
@@ -58,6 +59,7 @@ export interface QuestData {
     rarity?: 'common' | 'rare' | 'legendary';
     progress?: number;
     completedSteps?: number[];
+    xp?: number;
 }
 
 export type QuestCategory =

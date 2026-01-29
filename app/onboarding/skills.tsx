@@ -16,7 +16,7 @@ import { useOnboardingStore } from '@/src/store/onboardingStore';
 const SKILL_OPTIONS = [
     { id: 'writing', label: 'Writing', icon: '✍️' },
     { id: 'design', label: 'Design', icon: '🎨' },
-    { id: 'coding', label: 'Coding', icon: '💻' },
+    { id: 'development', label: 'Development', icon: '💻' },
     { id: 'photography', label: 'Photography', icon: '📸' },
     { id: 'video-editing', label: 'Video Editing', icon: '🎬' },
     { id: 'social-media', label: 'Social Media', icon: '📱' },

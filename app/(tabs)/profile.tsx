@@ -1,14 +1,17 @@
 
 import { ReferralCard } from '@/src/components/referral/ReferralCard';
 import { Button } from '@/src/components/ui/Button';
+import { supabase } from '@/src/config/supabase';
 import { BORDER_RADIUS, COLORS, FONT_SIZES, SPACING } from '@/src/constants/theme';
 import { useTheme } from '@/src/context/ThemeContext';
+import { useAlertStore } from '@/src/store/alertStore';
 import { useAuthStore } from '@/src/store/authStore';
+import { useQuestStore } from '@/src/store/questStore';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
@@ -16,6 +19,7 @@ export default function ProfileScreen() {
     const { user, isGuest, clearUser, setGuest } = useAuthStore();
     const [name, setName] = useState(user?.user_metadata?.full_name || 'Hustler');
     const [image, setImage] = useState(user?.user_metadata?.avatar_url || null);
+    const [uploading, setUploading] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
     const handleSignOut = async () => {
@@ -23,31 +27,153 @@ export default function ProfileScreen() {
         router.replace('/login');
     };
 
+    const { showAlert, hideAlert } = useAlertStore();
+
+    const uploadImage = async (uri: string) => {
+        try {
+            setUploading(true);
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            const arrayBuffer = await new Response(blob).arrayBuffer();
+            const fileExt = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+            const fileName = `${user?.id}/avatar.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            // Create formData for Supabase
+            const formData = new FormData();
+            formData.append('file', {
+                uri,
+                name: fileName,
+                type: `image/${fileExt}`
+            } as any);
+
+            // Upload directly to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, arrayBuffer, {
+                    contentType: `image/${fileExt}`,
+                    upsert: true
+                });
+
+            if (uploadError) throw uploadError;
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            // 1. Update Auth Metadata
+            const { data: { user: updatedUser }, error: updateError } = await supabase.auth.updateUser({
+                data: { avatar_url: publicUrl }
+            });
+
+            if (updateError) throw updateError;
+
+            // 2. Update Public Profile Table
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: user?.id,
+                    avatar_url: publicUrl,
+                    updated_at: new Date().toISOString(),
+                });
+
+            if (profileError) {
+                console.error("Profile table update failed (avatar):", profileError);
+            }
+
+            // CRITICAL: Update local store immediately to persist change in UI
+            if (updatedUser) {
+                const { setUser } = useAuthStore.getState();
+                setUser(updatedUser);
+            }
+
+            setImage(publicUrl);
+            showAlert('Success', 'Profile picture updated!');
+        } catch (error) {
+            console.error('Error uploading image: ', error);
+            // Fallback for demo/guest mode or if storage fails
+            setImage(uri);
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const pickImage = async () => {
         // Request permissions
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Permission needed', 'Sorry, we need camera roll permissions to make this work!');
+            showAlert('Permission needed', 'Sorry, we need camera roll permissions to make this work!', [{ text: 'OK', onPress: hideAlert }]);
             return;
         }
 
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'], // Updated from deprecated MediaTypeOptions
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.5,
         });
 
-        if (!result.canceled) {
+        if (!result.canceled && result.assets[0].uri) {
             setImage(result.assets[0].uri);
-            // TODO: Upload to Supabase Storage and update user metadata
+            if (!isGuest && user) {
+                await uploadImage(result.assets[0].uri);
+            }
         }
     };
 
-    const handleSaveProfile = () => {
-        setIsEditing(false);
-        // TODO: Update user metadata in Supabase
+    const handleSaveProfile = async () => {
+        if (isGuest || !user) {
+            setIsEditing(false);
+            return;
+        }
+
+        try {
+            // 1. Update Auth Metadata (Session)
+            const { error: authError } = await supabase.auth.updateUser({
+                data: { full_name: name }
+            });
+
+            if (authError) throw authError;
+
+            // 2. Update Public Profile Table
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: user.id,
+                    full_name: name,
+                    email: user.email,
+                    updated_at: new Date().toISOString(),
+                });
+
+            if (profileError) {
+                console.error("Profile table update failed:", profileError);
+            }
+
+            setIsEditing(false);
+            showAlert('Success', 'Profile updated!', [{ text: 'OK', onPress: hideAlert }]);
+
+            // Refresh local user to ensure UI updates
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                useAuthStore.getState().setUser(session.user);
+            }
+
+        } catch (error) {
+            showAlert('Error', 'Error updating profile', [{ text: 'OK', onPress: hideAlert }]);
+            console.error(error);
+        }
     };
+
+    // --- REAL DATA INTEGRATION ---
+    const { completedQuests, getStreak, getTotalXP, getPotentialEarnings, getTopSkill } = useQuestStore();
+
+    const questsDoneCount = completedQuests.length;
+    const totalXP = getTotalXP();
+    const potentialEarnings = getPotentialEarnings();
+    const topCategory = getTopSkill();
+    // -----------------------------
+
 
     // Guest Mode is now handled inline
     const GuestBanner = () => (
@@ -71,10 +197,10 @@ export default function ProfileScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: SPACING.xl }}
+                contentContainerStyle={{ padding: SPACING.lg, paddingBottom: SPACING.xl }}
             >
                 <View style={styles.header}>
                     <Text style={styles.title}>Profile</Text>
@@ -100,6 +226,11 @@ export default function ProfileScreen() {
                                     {isEditing && (
                                         <View style={styles.editIconBadge}>
                                             <Feather name="camera" size={14} color="#FFF" />
+                                        </View>
+                                    )}
+                                    {uploading && (
+                                        <View style={styles.loadingBadge}>
+                                            <ActivityIndicator size="small" color={COLORS.primary} />
                                         </View>
                                     )}
                                 </View>
@@ -129,18 +260,31 @@ export default function ProfileScreen() {
                     )}
                 </View>
 
-                <View style={styles.statsRow}>
-                    <View style={styles.statCard}>
-                        <Text style={styles.statValue}>0</Text>
-                        <Text style={styles.statLabel}>Quests</Text>
-                    </View>
-                    <View style={styles.statCard}>
-                        <Text style={styles.statValue}>$0</Text>
-                        <Text style={styles.statLabel}>Earnings</Text>
-                    </View>
-                    <View style={styles.statCard}>
-                        <Text style={styles.statValue}>1</Text>
-                        <Text style={styles.statLabel}>Level</Text>
+                <View style={styles.statsContainer}>
+                    <Text style={styles.sectionTitle}>Hustle Statistics</Text>
+                    <View style={styles.consistencyGrid}>
+                        {/* Earnings Card */}
+                        <View style={[styles.trackerCard, { backgroundColor: '#10B98115', borderColor: '#10B981' }]}>
+                            <Feather name="dollar-sign" size={24} color="#10B981" style={{ marginBottom: 8 }} />
+                            <Text style={[styles.trackerValue, { color: '#10B981' }]}>${potentialEarnings}</Text>
+                            <Text style={styles.trackerLabel}>Potential Value</Text>
+                        </View>
+
+                        {/* Top Category Card */}
+                        <View style={[styles.trackerCard, { backgroundColor: '#3B82F615', borderColor: '#3B82F6' }]}>
+                            <Feather name="briefcase" size={24} color="#3B82F6" style={{ marginBottom: 8 }} />
+                            <Text style={[styles.trackerValue, { color: '#3B82F6', fontSize: 16 }]} numberOfLines={1}>
+                                {completedQuests.length > 0 ? topCategory.split(' ')[0] : '-'}
+                            </Text>
+                            <Text style={styles.trackerLabel}>Top Skill</Text>
+                        </View>
+
+                        {/* Quests Card */}
+                        <View style={[styles.trackerCard, { backgroundColor: '#F59E0B15', borderColor: '#F59E0B' }]}>
+                            <Feather name="check-circle" size={24} color="#F59E0B" style={{ marginBottom: 8 }} />
+                            <Text style={[styles.trackerValue, { color: '#F59E0B' }]}>{questsDoneCount}</Text>
+                            <Text style={styles.trackerLabel}>Quests Done</Text>
+                        </View>
                     </View>
                 </View>
 
@@ -165,7 +309,7 @@ export default function ProfileScreen() {
                         <Feather name="chevron-right" size={20} color={COLORS.textMuted} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.menuItem}>
+                    <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/settings/help' as any)}>
                         <Feather name="help-circle" size={20} color={COLORS.textPrimary} />
                         <Text style={styles.menuText}>Help & Support</Text>
                         <Feather name="chevron-right" size={20} color={COLORS.textMuted} />
@@ -190,7 +334,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.darkBg,
-        padding: SPACING.lg,
     },
     header: {
         flexDirection: 'row',
@@ -280,30 +423,40 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
     },
-    statsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+    statsContainer: {
         marginBottom: SPACING.xl,
+    },
+    sectionTitle: {
+        fontSize: FONT_SIZES.lg,
+        fontWeight: '700',
+        color: COLORS.textPrimary,
+        marginBottom: SPACING.md,
+        marginLeft: 4,
+    },
+    consistencyGrid: {
+        flexDirection: 'row',
         gap: SPACING.md,
     },
-    statCard: {
+    trackerCard: {
         flex: 1,
-        backgroundColor: COLORS.cardBg,
         padding: SPACING.md,
-        borderRadius: BORDER_RADIUS.lg,
+        borderRadius: BORDER_RADIUS.xl,
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: COLORS.borderColor,
+        justifyContent: 'center',
+        minHeight: 110,
     },
-    statValue: {
-        fontSize: FONT_SIZES.xl,
-        fontWeight: '700',
-        color: COLORS.primary,
+    trackerValue: {
+        fontSize: FONT_SIZES.lg,
+        fontWeight: '800',
         marginBottom: 4,
     },
-    statLabel: {
+    trackerLabel: {
         fontSize: FONT_SIZES.xs,
+        fontWeight: '600',
         color: COLORS.textSecondary,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     menuSection: {
         backgroundColor: COLORS.cardBg,
@@ -359,4 +512,15 @@ const styles = StyleSheet.create({
         fontSize: FONT_SIZES.xs,
         color: COLORS.textSecondary,
     },
+    loadingBadge: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        borderRadius: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+    }
 });

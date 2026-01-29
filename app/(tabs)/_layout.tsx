@@ -25,25 +25,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="discover"
-        options={{
-          href: null, // Hide from tab bar
-          title: 'Discover',
-          tabBarIcon: ({ color }) => <Feather name="compass" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="membership"
-        options={{
-          title: 'Membership',
-          tabBarIcon: ({ color }) => <Feather name="award" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="earn"
         options={{
           title: 'Earn',
           tabBarIcon: ({ color }) => <Feather name="dollar-sign" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Coach',
+          tabBarIcon: ({ color }) => <Feather name="message-circle" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -53,7 +45,22 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="discover"
+        options={{
+          href: null,
+          title: 'Discover',
+          tabBarIcon: ({ color }) => <Feather name="compass" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="membership"
+        options={{
+          href: null,
+          title: 'Membership',
+          tabBarIcon: ({ color }) => <Feather name="award" size={24} color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
-

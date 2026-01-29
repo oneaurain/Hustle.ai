@@ -7,6 +7,9 @@ import 'react-native-reanimated';
 import '../global.css';
 
 import { SplashScreen } from '@/src/components/SplashScreen';
+import { CustomAlert } from '@/src/components/ui/CustomAlert';
+import { LevelUpModal } from '@/src/components/ui/LevelUpModal';
+import { RatingModal } from '@/src/components/ui/RatingModal'; // Import
 import { Toast } from '@/src/components/ui/Toast';
 import { ThemeProvider as CustomThemeProvider } from '@/src/context/ThemeContext';
 import { useAuthStore } from '@/src/store/authStore';
@@ -55,13 +58,16 @@ export default function RootLayout() {
           <Stack
             screenOptions={{
               headerShown: false,
-              contentStyle: { backgroundColor: '#0A0E27' },
+              contentStyle: { backgroundColor: '#FFFFFF' },
             }}
           >
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           </Stack>
+          <LevelUpModal />
+          <RatingModal />
+          <CustomAlert />
           <Toast message="" visible={false} onHide={() => { }} />
           <StatusBar style="light" />
         </ThemeProvider>

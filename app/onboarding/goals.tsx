@@ -67,9 +67,9 @@ export default function GoalsScreen() {
             // Save user profile to Supabase
             if (user?.id) {
                 const { error } = await supabase
-                    .from('user_profiles')
+                    .from('profiles')
                     .upsert({
-                        user_id: user.id,
+                        id: user.id,
                         ...onboardingData,
                     });
 
@@ -96,7 +96,7 @@ export default function GoalsScreen() {
 
                 const { data, error } = await supabase
                     .from('quests')
-                    .insert(questsToInsert)
+                    .insert(questsToInsert as any)
                     .select();
 
                 if (error) throw error;

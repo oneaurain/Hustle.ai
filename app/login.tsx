@@ -1,6 +1,4 @@
-import { makeRedirectUri } from 'expo-auth-session';
 import { useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -48,48 +46,7 @@ export default function LoginScreen() {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        try {
-            const redirectUrl = makeRedirectUri({ scheme: 'hustle-ai' }); // Ensure scheme matches app.json
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: redirectUrl,
-                    skipBrowserRedirect: true,
-                },
-            });
 
-            if (error) throw error;
-
-            if (data?.url) {
-                const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
-                if (result.type === 'success' && result.url) {
-                    // Extract tokens from the URL fragment
-                    const params = result.url.split('#')[1] || result.url.split('?')[1];
-                    if (params) {
-                        const searchParams = new URLSearchParams(params);
-                        const access_token = searchParams.get('access_token');
-                        const refresh_token = searchParams.get('refresh_token');
-
-                        if (access_token && refresh_token) {
-                            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-                                access_token,
-                                refresh_token,
-                            });
-                            if (sessionError) throw sessionError;
-
-                            if (sessionData.user) {
-                                setUser(sessionData.user);
-                                router.replace('/(tabs)');
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (error: any) {
-            Alert.alert('Google Sign In Error', error.message);
-        }
-    };
 
     const handleGuestLogin = () => {
         setGuest(true);
@@ -130,7 +87,7 @@ export default function LoginScreen() {
                             autoCapitalize="none"
                             autoComplete="password"
                             rightIcon={
-                                <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                                <Feather name={showPassword ? "eye" : "eye-off"} size={20} color={COLORS.textSecondary} />
                             }
                             onRightIconPress={() => setShowPassword(!showPassword)}
                         />
@@ -172,14 +129,7 @@ export default function LoginScreen() {
                             <View style={styles.dividerLine} />
                         </View>
 
-                        <Button
-                            title="Continue with Google"
-                            variant="outline"
-                            onPress={handleGoogleLogin}
-                            fullWidth
-                            icon={<Feather name="globe" size={20} color={COLORS.primary} />}
-                            style={styles.socialButton}
-                        />
+
 
                         <Button
                             title="Continue as Guest"
@@ -237,9 +187,7 @@ const styles = StyleSheet.create({
     form: {
         marginBottom: SPACING.xl,
     },
-    eyeIcon: {
-        fontSize: 20,
-    },
+
     loginButton: {
         marginTop: SPACING.md,
         marginBottom: SPACING.sm,

@@ -1,15 +1,12 @@
 import { COLORS, FONT_SIZES } from '@/src/constants/theme';
-import { useGamificationStore } from '@/src/store/gamificationStore';
+import { useQuestStore } from '@/src/store/questStore';
 import { Feather } from '@expo/vector-icons';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 export const StreakCounter: React.FC = () => {
-    const { streak, checkStreak } = useGamificationStore();
-
-    useEffect(() => {
-        checkStreak();
-    }, []);
+    const { getStreak } = useQuestStore();
+    const streak = getStreak(); // Use the selector directly
 
     return (
         <View style={styles.container}>

@@ -1,0 +1,43 @@
+{
+    "cli": {
+        "version": ">= 4.0.0",
+        "appVersionSource": "local"
+    },
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "channel": "development"
+        },
+        "preview": {
+            "distribution": "internal",
+            "channel": "preview"
+        },
+        "production": {
+            "android": {
+                "buildType": "app-bundle"
+            },
+            "channel": "production",
+            "env": {
+                "EXPO_PUBLIC_SUPABASE_URL": "https://xxinpyycvwxyeadvgxwm.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4aW5weXljdnd4eWVhZHZneHdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1MTgzNzIsImV4cCI6MjA4NTA5NDM3Mn0.aG2LB9k9z6XReSqLBlagFYgG_zZrTPB_d_EVKMTdLuo",
+                "EXPO_PUBLIC_GROQ_API_KEY": "REDACTED_FOR_GITHUB",
+                "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "983981038153-tpck1t4lg3849f4r0hleij0fmqg8e9v0.apps.googleusercontent.com",
+                "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51SuCX0RWXHsUw0UJHXBKQfUFCJOFm1UdzqtdJ4XFNApR8pXYG4pUYHKk8HWhwhE02KTW8dszt6SdZcxR4fXgD6Tm00M0F4j8Wm",
+                "EXPO_PUBLIC_APP_ENV": "production",
+                "EXPO_PUBLIC_ADMOB_BANNER_ID": "ca-app-pub-1590520857057028/7880015393",
+                "EXPO_PUBLIC_ADMOB_REWARDED_ID": "ca-app-pub-1590520857057028/4803729258",
+                "ADMOB_APP_ID": "ca-app-pub-1590520857057028~3382836376"
+            }
+        },
+        "apk": {
+            "extends": "production",
+            "android": {
+                "buildType": "apk"
+            }
+        }
+    },
+    "submit": {
+        "production": {}
+    }
+}

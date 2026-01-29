@@ -1,101 +1,169 @@
-import { GEMINI_MODEL, genAI, generationConfig, safetySettings } from '../config/gemini';
+import { GROQ_API_URL, GROQ_MODEL, getGroqHeaders } from '../config/groq';
+import localJobs from '../data/jobs.json';
 import { OnboardingData, QuestData } from '../types';
 
+const API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY;
+
+// Helper to filter local jobs based on user profile
+const getLocalRecommendations = (userProfile: OnboardingData): QuestData[] => {
+    // 1. Filter by available time
+    let recommended = localJobs.filter(job => {
+        return job.min_time_hours <= userProfile.available_hours_per_week;
+    });
+
+    // 2. Score by skills match
+    recommended = recommended.map(job => {
+        const matchingSkills = job.skills.filter(skill =>
+            userProfile.skills.some(userSkill =>
+                userSkill.toLowerCase().includes(skill.toLowerCase()) ||
+                skill.toLowerCase().includes(userSkill.toLowerCase())
+            )
+        );
+        return { ...job, matchScore: matchingSkills.length };
+    }).sort((a, b) => (b as any).matchScore - (a as any).matchScore);
+
+    // 3. Transform to QuestData format
+    return recommended.slice(0, 3).map(job => ({
+        title: job.title,
+        icon: 'briefcase',
+        shortDescription: job.description,
+        fullDescription: `${job.description}\n\nKey Skills: ${job.skills.join(', ')}`,
+        category: job.category as any,
+        earningsPotential: {
+            min: job.earnings_min,
+            max: job.earnings_max
+        },
+        timeToFirstDollar: job.max_time_hours,
+        difficulty: job.difficulty as any,
+        startupCost: 0,
+        whyMatch: "Based on your matching skills and time availability.",
+        actionSteps: job.action_steps,
+        requiredSkills: job.skills,
+        requiredResources: ["Computer", "Internet"],
+        platforms: ["Upwork", "Fiverr"],
+    }));
+};
+
 /**
- * Generate personalized quest recommendations using Gemini AI
- */
-export async function generateQuests(
-    userProfile: OnboardingData
-): Promise<QuestData[]> {
-    try {
-        if (!genAI) {
-            console.warn('Gemini API not configured, using fallback quests');
-            return getFallbackQuests();
-        }
-
-        const model = genAI.getGenerativeModel({
-            model: GEMINI_MODEL,
-            generationConfig,
-            safetySettings,
-        });
-
-        const prompt = buildQuestPrompt(userProfile);
-
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        const text = response.text();
-
-        // Clean up the response - remove markdown code blocks if present
-        const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-
-        // Parse the JSON response
-        const quests = JSON.parse(cleanedText) as QuestData[];
-
-        // Validate we got an array
-        if (!Array.isArray(quests)) {
-            throw new Error('Invalid response format from AI');
-        }
-
-        return quests;
-    } catch (error) {
-        console.error('Error generating quests:', error);
-        // Return fallback quests if AI fails
-        return getFallbackQuests();
-    }
-}
-
-/**
- * Build the prompt for Gemini AI based on master plan specifications
+ * Build the prompt for LLM based on master plan specifications
  */
 function buildQuestPrompt(profile: OnboardingData): string {
-    return `You are SideQuest AI, an expert side hustle advisor specifically for Gen Z (ages 18-25). Your goal is to suggest realistic, achievable side hustles that match the user's profile.
+    const skills = profile.skills.length > 0 ? profile.skills.join(', ') : "General, Motivation, Fast Learner";
+    const interests = profile.interests.length > 0 ? profile.interests.join(', ') : "Making Money, Flexibility, Remote Work";
+    const goals = profile.goals.length > 0 ? profile.goals.join(', ') : "Earn Extra Income";
+    const time = profile.available_hours_per_week || 10;
 
-IMPORTANT GUIDELINES:
-- Be realistic about earning potential (no "make $10k/month easily" promises)
-- Focus on hustles that can actually start with their available resources
-- Consider their time constraints seriously
-- Match their skill level (don't suggest coding if they have no tech skills)
-- Use Gen Z language (but stay professional)
-- Prioritize hustles that can generate income within 1-4 weeks
+    // Diversity Injector: Randomly pick 3 distinct niches to force variety
+    const niches = [
+        "Local Service", "Digital Freelancing", "Content Creation",
+        "Re-selling/Flipping", "Gig Economy", "Teaching/Coaching",
+        "Handmade Crafts", "Tech Support", "Event Planning",
+        "Virtual Assistance", "Pet Care", "Home Organization",
+        "Consulting", "Affiliate Marketing", "User Testing"
+    ];
+    // Shuffle and pick 3
+    const selectedNiches = niches.sort(() => 0.5 - Math.random()).slice(0, 3).join(', ');
 
-USER PROFILE:
-Skills: ${profile.skills.join(', ')}
-Available Time: ${profile.available_hours_per_week} hours per week
-Resources Available: ${profile.resources.join(', ')}
-Primary Goals: ${profile.goals.join(', ')}
-Interests: ${profile.interests.join(', ')}
-Location Type: ${profile.location_type}
-
-TASK: Generate exactly 5 personalized side hustle recommendations. Each recommendation must be formatted as a JSON object with these exact fields:
-
-{
-  "title": "Clear, catchy name for the hustle",
-  "icon": "Single emoji representing the hustle",
-  "shortDescription": "2-sentence hook (max 150 characters total)",
-  "fullDescription": "3-4 detailed sentences explaining what this involves",
-  "category": "Content Creation, Freelancing, E-commerce, Services, Teaching, Tech, or Creative",
-  "earningsPotential": {
-    "min": realistic monthly minimum in USD,
-    "max": realistic monthly maximum in USD
-  },
-  "timeToFirstDollar": estimated hours until first payment (10-80 hours),
-  "difficulty": integer 1-5 (1=very easy, 5=very hard),
-  "startupCost": startup cost in USD (0-500),
-  "whyMatch": "2 sentences explaining specifically why THIS hustle matches THEIR profile",
-  "actionSteps": [
-    "Step 1: Very specific, actionable first step",
-    "Step 2: Next concrete action",
-    "Step 3: Third step",
-    "Step 4: Fourth step",
-    "Step 5: Final step to start earning"
-  ],
-  "requiredSkills": ["skill1", "skill2"],
-  "requiredResources": ["resource1", "resource2"],
-  "platforms": ["Specific platform/website names"],
-  "commonPitfalls": ["Pitfall 1", "Pitfall 2", "Pitfall 3"]
+    return `
+    Suggest 3 UNIQUE and distinct side hustles for a user with these stats.
+    IMPORTANT: To ensure variety, focus specifically on these 3 niches: ${selectedNiches}.
+    
+    User Profile:
+    - Skills: ${skills}
+    - Available Time: ${time} hours/week
+    - Interests: ${interests}
+    - Goals: ${goals}
+    
+    Output strictly a JSON array of objects with this schema:
+    [{
+      "title": "string",
+      "icon": "briefcase",
+      "shortDescription": "string (1 sentence)",
+      "fullDescription": "string",
+      "category": "string (one of: Content Creation, Freelancing, E-commerce, Services, Teaching, Tech, Creative)",
+      "earningsPotential": { "min": number, "max": number },
+      "timeToFirstDollar": number,
+      "difficulty": number (1-5),
+      "startupCost": number,
+      "whyMatch": "string",
+      "actionSteps": ["string", "string"],
+      "requiredSkills": ["string"],
+      "requiredResources": ["string"],
+      "platforms": ["string"]
+    }]
+    `;
 }
 
-CRITICAL: Return ONLY valid JSON array format. No markdown, no code blocks, no explanations. Just the pure JSON array of 5 quests starting with [ and ending with ].`;
+/**
+ * Generate personalized quest recommendations using Groq API
+ */
+export async function generateQuests(userProfile: OnboardingData): Promise<QuestData[]> {
+    if (!API_KEY) {
+        console.warn('Groq API not configured, using fallback quests');
+        return getLocalRecommendations(userProfile);
+    }
+
+    try {
+        const prompt = buildQuestPrompt(userProfile);
+        const response = await fetch(GROQ_API_URL, {
+            method: 'POST',
+            headers: getGroqHeaders(API_KEY),
+            body: JSON.stringify({
+                model: GROQ_MODEL,
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an AI career coach specializing in side hustles. You MUST output strictly valid JSON array only. No markdown formatting, no explanation."
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                temperature: 0.7,
+                response_format: { type: "json_object" }
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Groq API Error:', response.status, response.statusText, JSON.stringify(data));
+            return getLocalRecommendations(userProfile);
+        }
+
+        const content = data.choices?.[0]?.message?.content;
+
+        if (!content) {
+            console.error('Groq API returned no content:', JSON.stringify(data));
+            return getLocalRecommendations(userProfile);
+        }
+
+        const cleanedText = content.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleanedText);
+
+        if (Array.isArray(parsed)) {
+            return parsed as QuestData[];
+        } else if (typeof parsed === 'object' && parsed !== null) {
+            // Handle wrapped arrays commonly returned by Llama models
+            const possibleKeys = ['sideHustles', 'side_hustles', 'quests', 'recommendations', 'data'];
+            for (const key of possibleKeys) {
+                if (Array.isArray(parsed[key])) {
+                    return parsed[key] as QuestData[];
+                }
+            }
+
+            console.error('Groq returned object without known array key:', JSON.stringify(parsed));
+            return getLocalRecommendations(userProfile);
+        } else {
+            console.error('Groq returned unknown format:', parsed);
+            return getLocalRecommendations(userProfile);
+        }
+    } catch (error) {
+        console.error('Error generating quests with AI:', error);
+        console.log('Falling back to local database...');
+        return getLocalRecommendations(userProfile);
+    }
 }
 
 /**
@@ -190,40 +258,50 @@ function getFallbackQuests(): QuestData[] {
 /**
  * Generate a single custom quest based on user request (premium feature)
  */
+/**
+ * Generate a single custom quest based on user request (premium feature)
+ */
 export async function generateCustomQuest(
     userProfile: OnboardingData,
     questIdea: string
 ): Promise<QuestData | null> {
-    try {
-        if (!genAI) {
-            return null;
-        }
+    if (!API_KEY) {
+        // Return first local match or null if no key
+        const local = getLocalRecommendations(userProfile);
+        return local.length > 0 ? local[0] : null;
+    }
 
-        const model = genAI.getGenerativeModel({
-            model: GEMINI_MODEL,
-            generationConfig,
-            safetySettings,
+    try {
+        const response = await fetch(GROQ_API_URL, {
+            method: 'POST',
+            headers: getGroqHeaders(API_KEY),
+            body: JSON.stringify({
+                model: GROQ_MODEL,
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an expert side hustle coach. Output strictly valid JSON object only."
+                    },
+                    {
+                        role: "user",
+                        content: `Create a specific side hustle quest about "${questIdea}" for this user profile: ${JSON.stringify(userProfile)}. 
+                        Schema: Same as main generation but return a SINGLE object, not an array. Output valid JSON only.`
+                    }
+                ]
+            })
         });
 
-        const prompt = `You are SideQuest AI. Based on this user profile and their quest idea, create ONE detailed, personalized quest recommendation.
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content;
 
-USER PROFILE:
-Skills: ${userProfile.skills.join(', ')}
-Available Time: ${userProfile.available_hours_per_week} hours per week
-Resources: ${userProfile.resources.join(', ')}
-Goals: ${userProfile.goals.join(', ')}
+        if (!content) return null;
 
-QUEST IDEA: ${questIdea}
-
-Return a single JSON object (not array) with the quest data matching the format from the main quest generation. Be specific, realistic, and actionable.`;
-
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-
+        const cleanedText = content.replace(/```json/g, '').replace(/```/g, '').trim();
         return JSON.parse(cleanedText) as QuestData;
     } catch (error) {
         console.error('Error generating custom quest:', error);
-        return null;
+        // Fallback to first local recommendation
+        const local = getLocalRecommendations(userProfile);
+        return local.length > 0 ? local[0] : null;
     }
 }

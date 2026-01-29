@@ -1,7 +1,7 @@
 services:
   - type: web
     name: sidequest-backend
-    env: node
+    runtime: node
     region: ohio # or frankfurt, oregon, etc.
     plan: free
     repo: https://github.com/oneaurain/Hustle.ai

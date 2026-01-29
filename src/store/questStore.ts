@@ -18,6 +18,10 @@ interface QuestState {
     markQuestCompleted: (questId: string) => Promise<void>;
     updateQuestProgress: (questId: string, completedStepIndex: number) => Promise<void>;
     initialize: () => Promise<void>;
+    getStreak: () => number;
+    getTotalXP: () => number;
+    getPotentialEarnings: () => number;
+    getTopSkill: () => string;
 }
 
 export const useQuestStore = create<QuestState>((set, get) => ({
@@ -186,4 +190,97 @@ export const useQuestStore = create<QuestState>((set, get) => ({
             progress
         });
     },
+
+    // Derived State Getters
+    getStreak: () => {
+        const completedQuests = get().completedQuests;
+        if (completedQuests.length === 0) return 0;
+
+        // Sort by date descending
+        const sorted = [...completedQuests].sort((a, b) =>
+            new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime()
+        );
+
+        const uniqueDates = new Set<string>();
+        sorted.forEach(q => {
+            if (q.completed_at) {
+                uniqueDates.add(q.completed_at.split('T')[0]);
+            }
+        });
+
+        const sortedDates = Array.from(uniqueDates).sort().reverse(); // ['2023-10-25', '2023-10-24', ...]
+
+        if (sortedDates.length === 0) return 0;
+
+        // Check if the most recent date is today or yesterday
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+        const lastActivity = sortedDates[0];
+        if (lastActivity !== today && lastActivity !== yesterday) {
+            return 0; // Streak broken
+        }
+
+        let streak = 0;
+        let currentDate = new Date(lastActivity);
+
+        for (let i = 0; i < sortedDates.length; i++) {
+            const dateStr = sortedDates[i];
+            const date = new Date(dateStr);
+
+            // Allow for same day (already handled by uniqueDates set, but logic check)
+            const diffTime = Math.abs(currentDate.getTime() - date.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (i === 0) {
+                streak++;
+                continue;
+            }
+
+            // If this date is exactly 1 day before the previous date (currentDate)
+            // Actually, my loop logic needs to be: 
+            // expectedDate is currentDate - 1 day.
+            // If sortedDates[i] == expectedDate, streak++, currentDate = expectedDate.
+
+            // Let's simplfy:
+            // current date is sortedDates[i-1] (prev iteration)
+            // check if sortedDates[i] is consecutive.
+
+            const prevDate = new Date(sortedDates[i - 1]);
+            const thisDate = new Date(sortedDates[i]);
+
+            const diff = (prevDate.getTime() - thisDate.getTime()) / (1000 * 3600 * 24);
+
+            if (Math.round(diff) === 1) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+
+        return streak;
+    },
+
+    getTotalXP: () => {
+        return get().completedQuests.reduce((acc, quest) => {
+            return acc + (quest.custom_data?.xp || 100);
+        }, 0);
+    },
+
+    getPotentialEarnings: () => {
+        return get().completedQuests.reduce((acc, quest) => {
+            return acc + (quest.custom_data?.earningsPotential?.min || 0);
+        }, 0);
+    },
+
+    getTopSkill: () => {
+        const completedQuests = get().completedQuests;
+        if (completedQuests.length === 0) return 'None';
+
+        const categories = completedQuests.map(q => q.custom_data?.category || 'General');
+        // Sort by frequency
+        return categories.sort((a, b) =>
+            categories.filter(v => v === a).length - categories.filter(v => v === b).length
+        ).pop() || 'General';
+    }
 }));

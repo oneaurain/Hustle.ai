@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { NOTIFICATION_TYPES } from '../data/notifications';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -73,5 +74,67 @@ export const notificationService = {
             },
             trigger: null, // Immediate
         });
+    },
+
+    /**
+     * Schedule one of the predefined notifications by ID
+     */
+    scheduleNotificationById: async (id: string, secondsDelay: number = 5) => {
+        if (Platform.OS === 'web') return;
+
+        const template = NOTIFICATION_TYPES.find(n => n.id === id);
+        if (!template) {
+            console.warn(`Notification template with id ${id} not found.`);
+            return;
+        }
+
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: template.title,
+                body: template.body,
+                sound: true,
+                data: { type: template.type }
+            },
+            trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+                seconds: secondsDelay,
+                repeats: false,
+            },
+        });
+
+        return `Scheduled: ${template.title}`;
+    },
+
+    /**
+     * Get all available notification types
+     */
+    getAllNotificationTypes: () => {
+        return NOTIFICATION_TYPES;
+    },
+
+    /**
+     * Schedule a random notification from the available types
+     */
+    scheduleRandomNotification: async (secondsDelay: number = 5) => {
+        if (Platform.OS === 'web') return;
+
+        const randomIndex = Math.floor(Math.random() * NOTIFICATION_TYPES.length);
+        const randomTemplate = NOTIFICATION_TYPES[randomIndex];
+
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: randomTemplate.title,
+                body: randomTemplate.body,
+                sound: true,
+                data: { type: randomTemplate.type }
+            },
+            trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+                seconds: secondsDelay,
+                repeats: false,
+            },
+        });
+
+        return `Scheduled random: ${randomTemplate.title}`;
     }
 };

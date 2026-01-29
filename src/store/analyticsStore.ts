@@ -17,7 +17,7 @@ interface AnalyticsState {
     logQuestCompletion: () => void;
     logAppOpen: () => void;
 
-    logAppOpen: () => void;
+
 }
 
 export const useAnalyticsStore = create<AnalyticsState>()(

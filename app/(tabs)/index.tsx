@@ -1,7 +1,6 @@
-import { notificationService } from '@/src/services/notificationService';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -15,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { QuestCard } from '@/src/components/QuestCard';
 import { StatDetailModal } from '@/src/components/StatDetailModal';
-import { ActivityChart } from '@/src/components/analytics/ActivityChart';
+import { ConsistencyGraph } from '@/src/components/analytics/ConsistencyGraph'; // Re-import
 import { LevelProgress } from '@/src/components/gamification/LevelProgress';
 import { StreakCounter } from '@/src/components/gamification/StreakCounter';
 import { Button } from '@/src/components/ui/Button';
@@ -70,17 +69,6 @@ export default function HomeScreen() {
     setTimeout(() => setRefreshing(false), 1500);
   };
 
-  useEffect(() => {
-    // Check permissions and schedule nudge on mount
-    const setupNotifications = async () => {
-      const hasPermission = await notificationService.requestPermissions();
-      if (hasPermission) {
-        await notificationService.scheduleSmartNudge();
-      }
-    };
-    setupNotifications();
-  }, []);
-
   const getTimeBasedGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 5) return 'Good night';
@@ -130,7 +118,7 @@ export default function HomeScreen() {
 
         {/* Consistency Tracker */}
         <View style={{ paddingHorizontal: SPACING.lg }}>
-          <ActivityChart />
+          <ConsistencyGraph />
         </View>
 
         {/* Stats Section */}
@@ -138,21 +126,23 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.statCard}
             onPress={() => setSelectedStat({
-              title: 'Total Earnings',
-              value: `$${totalEarnings}`,
-              icon: 'dollar-sign',
+              title: 'Completed Quests',
+              value: completedQuests.length.toString(),
+              icon: 'check-circle',
               color: COLORS.success,
-              description: 'Your total accumulated earnings from completed quests. Keep hustling!',
-              trend: `+$${weeklyEarnings}`,
-              history: completedEarningsDetails.length > 0 ? completedEarningsDetails.slice(0, 5) : undefined
+              description: 'Total number of side quests you have successfully conquered.',
+              history: completedEarningsDetails.slice(0, 5).map(q => ({
+                label: q.label,
+                value: 'Completed'
+              }))
             })}
           >
             <View style={styles.statIconBg}>
-              <Feather name="dollar-sign" size={20} color={COLORS.success} />
+              <Feather name="check-circle" size={20} color={COLORS.success} />
             </View>
             <View>
-              <Text style={styles.statValue}>${totalEarnings}</Text>
-              <Text style={styles.statLabel}>Total Earned</Text>
+              <Text style={styles.statValue}>{completedQuests.length}</Text>
+              <Text style={styles.statLabel}>Completed</Text>
             </View>
           </TouchableOpacity>
 
