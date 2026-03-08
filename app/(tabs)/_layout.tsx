@@ -1,9 +1,12 @@
-import { COLORS } from '@/src/constants/theme';
+// import removed
 import { Feather } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { useTheme } from '@/src/context/ThemeContext';
 
 export default function TabLayout() {
+  const { colors: COLORS } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
@@ -29,6 +32,13 @@ export default function TabLayout() {
         options={{
           title: 'Earn',
           tabBarIcon: ({ color }) => <Feather name="dollar-sign" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="validate"
+        options={{
+          title: 'Analyze',
+          tabBarIcon: ({ color }) => <Feather name="search" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

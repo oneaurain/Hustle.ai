@@ -2,17 +2,14 @@
   "expo": {
     "name": "Hustle.ai",
     "slug": "hustle-ai",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "hustle-ai",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
-    },
-    "notification": {
-      "icon": "./assets/logo.png"
+      "supportsTablet": true,
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,9 +18,9 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.hustle.ai"
+      "package": "com.hustle.ai",
+      "versionCode": 4
     },
     "web": {
       "output": "static",
